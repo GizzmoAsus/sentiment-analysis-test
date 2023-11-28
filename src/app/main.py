@@ -1,40 +1,38 @@
-from typing import Optional
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, Field
+import uvicorn
+import nltk
+from nltk.sentiment import SentimentIntensityAnalyzer
+import os
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+# Initialise NLTK
+nltk.download('vader_lexicon')
+sia = SentimentIntensityAnalyzer()
+
+class SentimentRequest(BaseModel):
+  user_uuid: str = Field(..., description="The UUID of the user")
+  text: str = Field(..., description="The text to analyse")
 
 app = FastAPI()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods="GET",
-    allow_headers=["*"]
-)
+@app.get('/')
+async def index():
+  return "Service is running!"
 
-class Album():
-    def __init__(self, id, title, artist, price, image_url):
-         self.id = id
-         self.title = title
-         self.artist = artist
-         self.price = price
-         self.image_url = image_url
+# API for sentiment analysis
+@app.post('/')
+async def analyze_sentiment(request: SentimentRequest):
+  try:
+    user_uuid = request.user_uuid.strip()
+    text = request.text.strip()
 
-albums = [ 
-    Album(1, "You, Me and an App Id", "Daprize", 10.99, "https://aka.ms/albums-daprlogo"),
-    Album(2, "Seven Revision Army", "The Blue-Green Stripes", 13.99, "https://aka.ms/albums-containerappslogo"),
-    Album(3, "Scale It Up", "KEDA Club", 13.99, "https://aka.ms/albums-kedalogo"),
-    Album(4, "Lost in Translation", "MegaDNS", 12.99,"https://aka.ms/albums-envoylogo"),
-    Album(5, "Lock Down Your Love", "V is for VNET", 12.99, "https://aka.ms/albums-vnetlogo"),
-    Album(6, "Sweet Container O' Mine", "Guns N Probeses", 14.99, "https://aka.ms/albums-containerappslogo")
-]
+    # Perform sentiment analysis
+    score = sia.polarity_scores(text)
+    sentiment = 'positive' if score['compound'] > 0 else 'negative' if score['compound'] < 0 else 'neutral'
 
-@app.get("/")
-def read_root():
-    return {"Azure Container Apps Python Sample API"}
+    return {'user_uuid': user_uuid, 'text': text, 'sentiment': sentiment, 'sentiment_score': score}
+  except Exception as e:
+    raise HTTPException(status_code=500, detail=str(e))
 
-
-@app.get("/albums")
-def get_albums():
-    return albums
+if __name__ == '__main__':
+  uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
