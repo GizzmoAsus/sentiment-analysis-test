@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Debug Album API",
+      "name": "Sentiment Analysis API",
       "type": "python",
       "request": "launch",
       "module": "uvicorn",

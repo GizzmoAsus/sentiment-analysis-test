@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Start Album API",
+      "label": "Start Sentiment API",
       "type": "shell",
       "command": "uvicorn app.main:app --port 3500 --reload",
       "options": {
