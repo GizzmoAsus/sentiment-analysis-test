@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 import uvicorn
 import nltk
@@ -13,10 +14,18 @@ class SentimentRequest(BaseModel):
   text: str = Field(..., description="The text to analyse")
 
 app = FastAPI()
+methods = ["GET", "POST"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=methods,
+    allow_headers=["*"]
+)
 
 @app.get('/')
 async def index():
-  return "Service is running!"
+  return {"Service is running!"}
 
 # API for sentiment analysis
 @app.post('/')
