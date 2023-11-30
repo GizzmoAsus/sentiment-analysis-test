@@ -35,7 +35,7 @@ async def analyze_sentiment(request: SentimentRequest):
 
     # Perform sentiment analysis
     score = sia.polarity_scores(text)
-    sentiment = 'positive' if score['compound'] > 0 else 'negative' if score['compound'] < 0 else 'neutral'
+    sentiment = 'positive' if score['compound'] > 0.2 else 'negative' if score['compound'] < -0.2 else 'neutral'
 
     return {'text': text, 'sentiment': sentiment, 'sentiment_score': score}
   except Exception as e:
